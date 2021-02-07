@@ -44,7 +44,7 @@ var spawns = [[1,5],[22,5],[3,11],[23,12],[16,17],[5,23],[23,25],[1,28],[15,28]]
 //zuk spawns [9,7],[18,7]
 
 var mode = 0;
-var selected = [16,5];
+var selected;
 var mobs = [];
 var tape = [];
 
@@ -53,8 +53,42 @@ var ctx = can.getContext("2d");
 var size = 20;
 can.width = size*(29+6)
 can.height = size*30
+
+/* Automatic mob placing using GET parameters
+
+Mob spawn locations are expected to arrive in a 2D array consisting of either 1 or 2 elements.
+The sub-arrays must contain exactly 2 numbers (an x and y coordinate).
+
+Examples:
+  Wave 35: ?mager=[[5,23]]
+  Wave 66: ?mager=[[5,23],[23,25]]
+  Wave 62: ?bat=[[1,5],[3,11]]&blob=[[16,17]]&melee=[[23,12]]&ranger=[[1,28]]&mager=[[15,28]]
+*/
+function PrePlaceMobs(){
+    var mob_map = {'bat': 1, 'blob': 2, 'melee': 3, 'ranger': 4, 'mager': 5};
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+
+    for (let mob in mob_map) {
+        const mob_spawns = urlParams.getAll(mob)
+        if (mob_spawns == undefined || mob_spawns.length == 0) {
+            continue;
+        }
+
+        const parsed_mob_spawns = JSON.parse(mob_spawns);
+        parsed_mob_spawns.forEach(function(spawn, i) {
+            selected = spawn;
+            setMode(mob_map[mob])
+            place()
+        });
+    }
+}
+PrePlaceMobs();
+
 document.addEventListener('DOMContentLoaded',function(){
-   drawWave()
+    selected = [17,3];
+    setMode(0)
 });
 document.getElementById("map").addEventListener('mousedown',function(e){
 	var x = e.offsetX;
