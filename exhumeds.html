@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Xarpus Trio Exhumed Tiles</title>
+    <style>
+        body {
+            color: #c0c0c0;
+            background-color: #121212;
+        }
+
+        .box {
+            padding: 10px;
+        }
+
+        #canvas {
+            background: #212121;
+        }
+    </style>
+</head>
+
+<body>
+    Click the exhumed spawn point to show optimal partner tiles.
+    <br />
+    <div class="box">
+        <canvas id="canvas" width="601px" height="601px"></canvas>
+    </div>
+    <button onclick="toggleTileMarkers()">Toggle Tile Markers</button>
+    <button onclick="toggleTileBorders()">Toggle Tile Borders</button>
+</body>
+
+<script>
+    var bw = 600;
+    var bh = 600;
+    var size = 40;
+    var selected = [];
+    var players = [];
+
+    var tileBorders = true;
+    var tileMarkers = true;
+
+    function toggleTileMarkers() {
+        tileMarkers = !tileMarkers;
+        draw();
+    }
+
+    function toggleTileBorders() {
+        tileBorders = !tileBorders;
+        draw();
+    }
+
+    var optimalTiles = {
+        0: [{ x: 10, y: 5 }, { x: 5, y: 10 }],
+        1: [{ x: 10, y: 5 }, { x: 5, y: 10 }],
+        2: [{ x: 10, y: 5 }, { x: 5, y: 10 }],
+        3: [{ x: 10, y: 4 }, { x: 6, y: 11 }],
+        4: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        5: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        6: [{ x: 9, y: 4 }, { x: 8, y: 11 }],
+        7: [{ x: 9, y: 4 }, { x: 8, y: 11 }],
+        8: [{ x: 8, y: 3 }, { x: 9, y: 10 }],
+        9: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        10: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        11: [{ x: 6, y: 3 }, { x: 10, y: 10 }],
+        12: [{ x: 5, y: 4 }, { x: 10, y: 9 }],
+        13: [{ x: 5, y: 4 }, { x: 10, y: 9 }],
+        14: [{ x: 5, y: 4 }, { x: 10, y: 9 }],
+        15: [{ x: 10, y: 5 }, { x: 5, y: 10 }],
+        16: [{ x: 10, y: 5 }, { x: 5, y: 10 }],
+        17: [{ x: 10, y: 5 }, { x: 5, y: 10 }],
+        18: [{ x: 10, y: 4 }, { x: 6, y: 11 }],
+        19: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        20: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        21: [{ x: 9, y: 4 }, { x: 8, y: 11 }],
+        22: [{ x: 9, y: 4 }, { x: 9, y: 11 }],
+        23: [{ x: 8, y: 3 }, { x: 9, y: 10 }],
+        24: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        25: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        26: [{ x: 6, y: 3 }, { x: 10, y: 10 }],
+        27: [{ x: 5, y: 4 }, { x: 10, y: 9 }],
+        28: [{ x: 5, y: 4 }, { x: 10, y: 9 }],
+        29: [{ x: 5, y: 4 }, { x: 10, y: 9 }],
+        30: [{ x: 10, y: 5 }, { x: 5, y: 10 }],
+        31: [{ x: 10, y: 5 }, { x: 5, y: 10 }],
+        32: [{ x: 10, y: 5 }, { x: 5, y: 10 }],
+        33: [{ x: 10, y: 4 }, { x: 6, y: 11 }],
+        34: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        35: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        36: [{ x: 10, y: 4 }, { x: 8, y: 11 }],
+        37: [{ x: 9, y: 4 }, { x: 9, y: 11 }],
+        38: [{ x: 8, y: 3 }, { x: 10, y: 10 }],
+        39: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        40: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        41: [{ x: 6, y: 3 }, { x: 10, y: 10 }],
+        42: [{ x: 5, y: 4 }, { x: 10, y: 9 }],
+        43: [{ x: 5, y: 4 }, { x: 10, y: 9 }],
+        44: [{ x: 5, y: 4 }, { x: 10, y: 9 }],
+        45: [{ x: 11, y: 6 }, { x: 4, y: 10 }],
+        46: [{ x: 11, y: 6 }, { x: 4, y: 10 }],
+        47: [{ x: 11, y: 6 }, { x: 4, y: 10 }],
+        48: [{ x: 11, y: 5 }, { x: 5, y: 11 }],
+        49: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        50: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        51: [{ x: 10, y: 4 }, { x: 8, y: 11 }],
+        52: [{ x: 9, y: 4 }, { x: 9, y: 11 }],
+        53: [{ x: 8, y: 3 }, { x: 10, y: 10 }],
+        54: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        55: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        56: [{ x: 5, y: 3 }, { x: 11, y: 9 }],
+        57: [{ x: 4, y: 4 }, { x: 11, y: 8 }],
+        58: [{ x: 4, y: 4 }, { x: 11, y: 8 }],
+        59: [{ x: 4, y: 4 }, { x: 11, y: 8 }],
+        60: [{ x: 11, y: 7 }, { x: 4, y: 10 }],
+        61: [{ x: 11, y: 7 }, { x: 4, y: 10 }],
+        62: [{ x: 11, y: 7 }, { x: 4, y: 10 }],
+        63: [{ x: 11, y: 7 }, { x: 4, y: 10 }],
+        64: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        65: [{ x: 10, y: 4 }, { x: 7, y: 11 }],
+        66: [{ x: 10, y: 4 }, { x: 8, y: 11 }],
+        67: [{ x: 10, y: 4 }, { x: 9, y: 11 }],
+        68: [{ x: 8, y: 3 }, { x: 10, y: 10 }],
+        69: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        70: [{ x: 7, y: 3 }, { x: 10, y: 10 }],
+        71: [{ x: 4, y: 4 }, { x: 11, y: 8 }],
+        72: [{ x: 4, y: 4 }, { x: 11, y: 8 }],
+        73: [{ x: 4, y: 4 }, { x: 11, y: 8 }],
+        74: [{ x: 4, y: 4 }, { x: 11, y: 8 }],
+        75: [{ x: 11, y: 7 }, { x: 4, y: 10 }],
+        76: [{ x: 11, y: 7 }, { x: 4, y: 10 }],
+        77: [{ x: 11, y: 7 }, { x: 4, y: 10 }],
+        78: [{ x: 11, y: 7 }, { x: 4, y: 10 }],
+        79: [{ x: 11, y: 7 }, { x: 4, y: 10 }],
+        80: [{ x: 11, y: 4 }, { x: 7, y: 11 }],
+        81: [{ x: 10, y: 4 }, { x: 8, y: 11 }],
+        82: [{ x: 9, y: 3 }, { x: 10, y: 11 }],
+        83: [{ x: 8, y: 3 }, { x: 10, y: 10 }],
+        84: [{ x: 7, y: 3 }, { x: 11, y: 10 }],
+        85: [{ x: 4, y: 4 }, { x: 11, y: 7 }],
+        86: [{ x: 4, y: 4 }, { x: 11, y: 7 }],
+        87: [{ x: 4, y: 4 }, { x: 11, y: 7 }],
+        88: [{ x: 4, y: 4 }, { x: 11, y: 7 }],
+        89: [{ x: 4, y: 4 }, { x: 11, y: 7 }],
+        90: [{ x: 11, y: 8 }, { x: 4, y: 9 }],
+        91: [{ x: 11, y: 8 }, { x: 4, y: 9 }],
+        92: [{ x: 11, y: 8 }, { x: 4, y: 10 }],
+        93: [{ x: 11, y: 8 }, { x: 4, y: 10 }],
+        94: [{ x: 11, y: 8 }, { x: 4, y: 10 }],
+        95: [{ x: 11, y: 8 }, { x: 4, y: 10 }],
+        96: [{ x: 11, y: 5 }, { x: 5, y: 11 }],
+        97: [{ x: 9, y: 3 }, { x: 10, y: 11 }],
+        98: [{ x: 5, y: 4 }, { x: 11, y: 9 }],
+        99: [{ x: 4, y: 4 }, { x: 11, y: 6 }],
+        100: [{ x: 4, y: 4 }, { x: 11, y: 6 }],
+        101: [{ x: 4, y: 4 }, { x: 11, y: 6 }],
+        102: [{ x: 4, y: 4 }, { x: 11, y: 6 }],
+        103: [{ x: 4, y: 5 }, { x: 11, y: 6 }],
+        104: [{ x: 4, y: 5 }, { x: 11, y: 6 }],
+        105: [{ x: 3, y: 8 }, { x: 10, y: 9 }],
+        106: [{ x: 4, y: 9 }, { x: 11, y: 9 }],
+        107: [{ x: 4, y: 9 }, { x: 11, y: 9 }],
+        108: [{ x: 4, y: 9 }, { x: 11, y: 9 }],
+        109: [{ x: 3, y: 9 }, { x: 10, y: 10 }],
+        110: [{ x: 3, y: 9 }, { x: 11, y: 10 }],
+        111: [{ x: 3, y: 9 }, { x: 11, y: 10 }],
+        112: [{ x: 4, y: 4 }, { x: 10, y: 10 }],
+        113: [{ x: 3, y: 5 }, { x: 11, y: 5 }],
+        114: [{ x: 3, y: 5 }, { x: 11, y: 5 }],
+        115: [{ x: 4, y: 4 }, { x: 11, y: 5 }],
+        116: [{ x: 4, y: 5 }, { x: 11, y: 5 }],
+        117: [{ x: 4, y: 5 }, { x: 11, y: 5 }],
+        118: [{ x: 4, y: 5 }, { x: 11, y: 5 }],
+        119: [{ x: 4, y: 5 }, { x: 11, y: 6 }],
+        120: [{ x: 3, y: 8 }, { x: 10, y: 9 }],
+        121: [{ x: 3, y: 8 }, { x: 10, y: 9 }],
+        122: [{ x: 3, y: 8 }, { x: 10, y: 10 }],
+        123: [{ x: 3, y: 8 }, { x: 10, y: 10 }],
+        124: [{ x: 3, y: 8 }, { x: 10, y: 10 }],
+        125: [{ x: 3, y: 8 }, { x: 10, y: 10 }],
+        126: [{ x: 4, y: 5 }, { x: 9, y: 11 }],
+        127: [{ x: 5, y: 3 }, { x: 5, y: 11 }],
+        128: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+        129: [{ x: 10, y: 4 }, { x: 3, y: 6 }],
+        130: [{ x: 10, y: 4 }, { x: 3, y: 6 }],
+        131: [{ x: 10, y: 4 }, { x: 3, y: 6 }],
+        132: [{ x: 10, y: 4 }, { x: 3, y: 6 }],
+        133: [{ x: 10, y: 5 }, { x: 3, y: 6 }],
+        134: [{ x: 10, y: 5 }, { x: 3, y: 6 }],
+        135: [{ x: 3, y: 7 }, { x: 10, y: 10 }],
+        136: [{ x: 3, y: 7 }, { x: 10, y: 10 }],
+        137: [{ x: 3, y: 7 }, { x: 10, y: 10 }],
+        138: [{ x: 3, y: 7 }, { x: 10, y: 10 }],
+        139: [{ x: 3, y: 7 }, { x: 10, y: 10 }],
+        140: [{ x: 3, y: 7 }, { x: 10, y: 11 }],
+        141: [{ x: 4, y: 4 }, { x: 6, y: 11 }],
+        142: [{ x: 4, y: 4 }, { x: 5, y: 11 }],
+        143: [{ x: 6, y: 3 }, { x: 4, y: 10 }],
+        144: [{ x: 7, y: 3 }, { x: 3, y: 10 }],
+        145: [{ x: 10, y: 4 }, { x: 3, y: 7 }],
+        146: [{ x: 10, y: 4 }, { x: 3, y: 7 }],
+        147: [{ x: 10, y: 4 }, { x: 3, y: 7 }],
+        148: [{ x: 10, y: 4 }, { x: 3, y: 7 }],
+        149: [{ x: 10, y: 4 }, { x: 3, y: 7 }],
+        150: [{ x: 3, y: 7 }, { x: 10, y: 10 }],
+        151: [{ x: 3, y: 7 }, { x: 10, y: 10 }],
+        152: [{ x: 3, y: 7 }, { x: 10, y: 10 }],
+        153: [{ x: 3, y: 7 }, { x: 10, y: 10 }],
+        154: [{ x: 4, y: 4 }, { x: 8, y: 11 }],
+        155: [{ x: 4, y: 4 }, { x: 7, y: 11 }],
+        156: [{ x: 4, y: 4 }, { x: 6, y: 11 }],
+        157: [{ x: 4, y: 4 }, { x: 5, y: 11 }],
+        158: [{ x: 6, y: 3 }, { x: 4, y: 10 }],
+        159: [{ x: 7, y: 3 }, { x: 4, y: 10 }],
+        160: [{ x: 8, y: 3 }, { x: 4, y: 10 }],
+        161: [{ x: 10, y: 4 }, { x: 3, y: 8 }],
+        162: [{ x: 10, y: 4 }, { x: 3, y: 8 }],
+        163: [{ x: 10, y: 4 }, { x: 3, y: 8 }],
+        164: [{ x: 10, y: 4 }, { x: 3, y: 8 }],
+        165: [{ x: 3, y: 6 }, { x: 10, y: 10 }],
+        166: [{ x: 3, y: 6 }, { x: 10, y: 10 }],
+        167: [{ x: 3, y: 6 }, { x: 10, y: 10 }],
+        168: [{ x: 3, y: 5 }, { x: 9, y: 11 }],
+        169: [{ x: 4, y: 4 }, { x: 8, y: 11 }],
+        170: [{ x: 4, y: 4 }, { x: 7, y: 11 }],
+        171: [{ x: 4, y: 4 }, { x: 6, y: 11 }],
+        172: [{ x: 5, y: 4 }, { x: 5, y: 11 }],
+        173: [{ x: 6, y: 3 }, { x: 4, y: 10 }],
+        174: [{ x: 7, y: 3 }, { x: 4, y: 10 }],
+        175: [{ x: 8, y: 3 }, { x: 4, y: 10 }],
+        176: [{ x: 9, y: 3 }, { x: 3, y: 9 }],
+        177: [{ x: 10, y: 4 }, { x: 3, y: 8 }],
+        178: [{ x: 10, y: 4 }, { x: 3, y: 8 }],
+        179: [{ x: 10, y: 4 }, { x: 3, y: 8 }],
+        180: [{ x: 4, y: 5 }, { x: 9, y: 10 }],
+        181: [{ x: 4, y: 5 }, { x: 9, y: 10 }],
+        182: [{ x: 4, y: 5 }, { x: 9, y: 10 }],
+        183: [{ x: 4, y: 4 }, { x: 8, y: 11 }],
+        184: [{ x: 4, y: 4 }, { x: 8, y: 11 }],
+        185: [{ x: 4, y: 4 }, { x: 7, y: 11 }],
+        186: [{ x: 4, y: 4 }, { x: 6, y: 11 }],
+        187: [{ x: 5, y: 4 }, { x: 5, y: 11 }],
+        188: [{ x: 6, y: 3 }, { x: 4, y: 10 }],
+        189: [{ x: 7, y: 3 }, { x: 4, y: 10 }],
+        190: [{ x: 8, y: 3 }, { x: 4, y: 10 }],
+        191: [{ x: 8, y: 3 }, { x: 4, y: 10 }],
+        192: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+        193: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+        194: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+        195: [{ x: 4, y: 5 }, { x: 9, y: 10 }],
+        196: [{ x: 4, y: 5 }, { x: 9, y: 10 }],
+        197: [{ x: 4, y: 5 }, { x: 9, y: 10 }],
+        198: [{ x: 4, y: 4 }, { x: 8, y: 11 }],
+        199: [{ x: 4, y: 4 }, { x: 8, y: 11 }],
+        200: [{ x: 4, y: 4 }, { x: 7, y: 11 }],
+        201: [{ x: 5, y: 4 }, { x: 6, y: 11 }],
+        202: [{ x: 5, y: 4 }, { x: 5, y: 11 }],
+        203: [{ x: 6, y: 3 }, { x: 5, y: 10 }],
+        204: [{ x: 7, y: 3 }, { x: 4, y: 10 }],
+        205: [{ x: 8, y: 3 }, { x: 4, y: 10 }],
+        206: [{ x: 8, y: 3 }, { x: 4, y: 10 }],
+        207: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+        208: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+        209: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+        210: [{ x: 4, y: 5 }, { x: 9, y: 10 }],
+        211: [{ x: 4, y: 5 }, { x: 9, y: 10 }],
+        212: [{ x: 4, y: 5 }, { x: 9, y: 10 }],
+        213: [{ x: 4, y: 4 }, { x: 8, y: 11 }],
+        214: [{ x: 4, y: 4 }, { x: 8, y: 11 }],
+        215: [{ x: 4, y: 4 }, { x: 7, y: 11 }],
+        216: [{ x: 5, y: 4 }, { x: 6, y: 11 }],
+        217: [{ x: 5, y: 4 }, { x: 6, y: 11 }],
+        218: [{ x: 6, y: 3 }, { x: 5, y: 10 }],
+        219: [{ x: 7, y: 3 }, { x: 4, y: 10 }],
+        220: [{ x: 8, y: 3 }, { x: 4, y: 10 }],
+        221: [{ x: 8, y: 3 }, { x: 4, y: 10 }],
+        222: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+        223: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+        224: [{ x: 9, y: 4 }, { x: 4, y: 9 }],
+    }
+
+    var canvas = document.getElementById("canvas");
+    var context = canvas.getContext("2d");
+
+    function drawBoard() {
+        context.beginPath();
+        for (var x = 0; x <= bw; x += size) {
+            context.moveTo(0.5 + x, 0);
+            context.lineTo(0.5 + x, bh);
+        }
+
+        for (var x = 0; x <= bh; x += size) {
+            context.moveTo(0, 0.5 + x);
+            context.lineTo(bw, 0.5 + x);
+        }
+        context.strokeStyle = "#c0c0c0";
+        context.stroke();
+        context.closePath();
+    }
+
+    function outlineMelee() {
+        context.beginPath();
+        context.lineWidth = 2;
+        context.strokeStyle = "red";
+
+        // Outside Polygon
+
+        // Left Line
+        context.moveTo(2 * size, 3 * size);
+        context.lineTo(2 * size, 12 * size);
+
+        // Right Line
+        context.moveTo(13 * size, 3 * size);
+        context.lineTo(13 * size, 12 * size);
+
+        // Top Line
+        context.moveTo(3 * size, 2 * size);
+        context.lineTo(12 * size, 2 * size);
+
+        // Bottom Line
+        context.moveTo(3 * size, 13 * size);
+        context.lineTo(12 * size, 13 * size);
+
+        // NW Corner, North
+        context.moveTo(3 * size, 2 * size);
+        context.lineTo(3 * size, 3 * size);
+
+        // NW Corner, West
+        context.moveTo(2 * size, 3 * size);
+        context.lineTo(3 * size, 3 * size);
+
+        // NE Corner, North
+        context.moveTo(12 * size, 2 * size);
+        context.lineTo(12 * size, 3 * size);
+
+        // NE Corner, East
+        context.moveTo(12 * size, 3 * size);
+        context.lineTo(13 * size, 3 * size);
+
+        // SE Corner, South
+        context.moveTo(12 * size, 12 * size);
+        context.lineTo(12 * size, 13 * size);
+
+        // SE Corner, East
+        context.moveTo(12 * size, 12 * size);
+        context.lineTo(13 * size, 12 * size);
+
+        // SW Corner, South
+        context.moveTo(3 * size, 12 * size);
+        context.lineTo(3 * size, 13 * size);
+
+        // SW Corner, West
+        context.moveTo(2 * size, 12 * size);
+        context.lineTo(3 * size, 12 * size);
+
+        // Inside Polygon
+
+        // Left Line
+        context.moveTo(3 * size, 4 * size);
+        context.lineTo(3 * size, 11 * size);
+
+        // Right Line
+        context.moveTo(12 * size, 4 * size);
+        context.lineTo(12 * size, 11 * size);
+
+        // Top Line
+        context.moveTo(4 * size, 3 * size);
+        context.lineTo(11 * size, 3 * size);
+
+        // Bottom Line
+        context.moveTo(4 * size, 12 * size);
+        context.lineTo(11 * size, 12 * size);
+
+        // NW Corner, North
+        context.moveTo(4 * size, 3 * size);
+        context.lineTo(4 * size, 4 * size);
+
+        // NW Corner, West
+        context.moveTo(3 * size, 4 * size);
+        context.lineTo(4 * size, 4 * size);
+
+        // NE Corner, North
+        context.moveTo(11 * size, 3 * size);
+        context.lineTo(11 * size, 4 * size);
+
+        // NE Corner, East
+        context.moveTo(11 * size, 4 * size);
+        context.lineTo(12 * size, 4 * size);
+
+        // SE Corner, South
+        context.moveTo(11 * size, 11 * size);
+        context.lineTo(11 * size, 12 * size);
+
+        // SE Corner, East
+        context.moveTo(11 * size, 11 * size);
+        context.lineTo(12 * size, 11 * size);
+
+        // SW Corner, South
+        context.moveTo(4 * size, 11 * size);
+        context.lineTo(4 * size, 12 * size);
+
+        // SW Corner, West
+        context.moveTo(3 * size, 11 * size);
+        context.lineTo(4 * size, 11 * size);
+
+        context.stroke();
+        context.closePath();
+    }
+
+    function outlineTile(x, y) {
+        context.beginPath();
+        context.lineWidth = 2;
+        context.strokeStyle = "red";
+
+        context.rect(x * size, y * size, size, size)
+
+        context.stroke();
+        context.closePath();
+    }
+
+    function drawTileOutlines() {
+        if (tileMarkers) {
+            // North Post-Screech Tiles
+            outlineTile(6, 4);
+            outlineTile(8, 4);
+
+            // West Post-Screech Tiles
+            outlineTile(4, 6);
+            outlineTile(4, 8);
+
+            // East Post-Screech Tiles
+            outlineTile(10, 6);
+            outlineTile(10, 8);
+
+            // South Post-Screech Tiles
+            outlineTile(6, 10);
+            outlineTile(8, 10);
+        }
+
+        if (tileBorders) {
+            outlineMelee();
+        }
+    }
+
+    function checker() {
+        for (var i = 0; i < 15 * 15; i++) {
+            context.fillStyle = (i % 2) ? "#212121" : "#757575";
+            context.fillRect(i % 15 * size + 1, Math.floor(i / 15) * size + 1, size - 1, size - 1);
+        }
+    }
+
+    function fillTile(context, x, y) {
+        context.fillRect(x * size + 1, y * size + 1, size - 1, size - 1);
+    }
+
+    function clearTile(context, x, y) {
+        context.clearRect(x * size + 1, y * size + 1, size - 1, size - 1);
+    }
+
+    function repaintTile(context, x, y) {
+        if ((x * 15 + y) % 2 == 0) {
+            context.fillStyle = "#757575";
+            fillTile(context, x, y);
+        } else {
+            clearTile(context, x, y);
+        }
+    }
+
+    function draw() {
+        drawBoard();
+        checker();
+        drawTileOutlines();
+
+        // Fill in the Xarpus tiles
+        for (var y = 6; y < 9; y++) {
+            for (var x = 6; x < 9; x++) {
+                context.fillStyle = "#E26352";
+                fillTile(context, x, y);
+            }
+        }
+    }
+
+    document.getElementById("canvas").addEventListener('mousedown', function (e) {
+        var x = e.offsetX;
+        var y = e.offsetY;
+
+        x = Math.floor(x / size);
+        y = Math.floor(y / size);
+
+        // Exhumeds cannot spawn within this region
+        if ((x >= 6 && x <= 8) && (y >= 6 && y <= 8)) {
+            return;
+        }
+
+        // Wipe old selected/partner
+        if (selected.length != 0) {
+            repaintTile(context, selected[0], selected[1]);
+            players.forEach((player) => {
+                repaintTile(context, player.x, player.y);
+            });
+        }
+
+        selected[0] = x;
+        selected[1] = y;
+        players = optimalTiles[x * 15 + y];
+
+        context.fillStyle = "#0288D1";
+        fillTile(context, selected[0], selected[1]);
+
+        context.fillStyle = "orange";
+        players.forEach((player) => fillTile(context, player.x, player.y));
+
+        drawTileOutlines();
+    });
+
+    draw();
+</script>
