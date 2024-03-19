@@ -36,6 +36,13 @@
     var selected = [];
     var players = [];
 
+    let darkColor = "#212121";
+    let lightColor = "#2C2C2C";
+    let blockedColor = "#B71C1C";
+
+    let selectedColor = "#00E676";
+    let partnerColor = "#0091EA";
+
     var tileBorders = true;
     var tileMarkers = true;
 
@@ -442,8 +449,7 @@
 
     function checker() {
         for (var i = 0; i < 15 * 15; i++) {
-            context.fillStyle = (i % 2) ? "#212121" : "#757575";
-            context.fillRect(i % 15 * size + 1, Math.floor(i / 15) * size + 1, size - 1, size - 1);
+            repaintTile(context, i % 15, Math.floor(i / 15));
         }
     }
 
@@ -457,10 +463,11 @@
 
     function repaintTile(context, x, y) {
         if ((x * 15 + y) % 2 == 0) {
-            context.fillStyle = "#757575";
+            context.fillStyle = lightColor;
             fillTile(context, x, y);
         } else {
-            clearTile(context, x, y);
+            context.fillStyle = darkColor;
+            fillTile(context, x, y);
         }
     }
 
@@ -472,7 +479,7 @@
         // Fill in the Xarpus tiles
         for (var y = 6; y < 9; y++) {
             for (var x = 6; x < 9; x++) {
-                context.fillStyle = "#E26352";
+                context.fillStyle = blockedColor;
                 fillTile(context, x, y);
             }
         }
@@ -502,10 +509,10 @@
         selected[1] = y;
         players = optimalTiles[x * 15 + y];
 
-        context.fillStyle = "#0288D1";
+        context.fillStyle = selectedColor;
         fillTile(context, selected[0], selected[1]);
 
-        context.fillStyle = "orange";
+        context.fillStyle = partnerColor;
         players.forEach((player) => fillTile(context, player.x, player.y));
 
         drawTileOutlines();
